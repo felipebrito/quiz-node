@@ -1,4 +1,4 @@
-Aqui está a documentação para o código do seu jogo de perguntas e respostas:
+Aqui está a documentação atualizada com detalhes sobre a estrutura das perguntas:
 
 ---
 
@@ -8,13 +8,15 @@ Aqui está a documentação para o código do seu jogo de perguntas e respostas:
 
 - [Introdução](#introdução)
 - [Instalação](#instalação)
+- [Configuração do Ambiente](#configuração-do-ambiente)
 - [Configuração](#configuração)
 - [Funcionalidades](#funcionalidades)
+- [Estrutura das Perguntas](#estrutura-das-perguntas)
 - [Arquitetura](#arquitetura)
 - [Fluxo do Jogo](#fluxo-do-jogo)
 - [Endpoints da API](#endpoints-da-api)
 - [Mensagens OSC](#mensagens-osc)
-- [Melhorias Futuras](#melhorias-futuras)
+- [Mensagens de Debug](#mensagens-de-debug)
 
 ## Introdução
 
@@ -25,8 +27,8 @@ Este é um jogo de perguntas e respostas onde os jogadores competem entre si par
 1. Clone o repositório:
 
    ```sh
-   git clone https://github.com/seu-usuario/seu-repositorio.git
-   cd seu-repositorio
+   git clone https://github.com/felipebrito/quiz-node.git
+   cd quiz-node
    ```
 
 2. Instale as dependências:
@@ -35,16 +37,48 @@ Este é um jogo de perguntas e respostas onde os jogadores competem entre si par
    npm install
    ```
 
-3. Inicie o servidor:
+## Configuração do Ambiente
+
+### Configuração de Portas
+
+- **Porta do Servidor HTTP**: O servidor HTTP roda na porta `3000`:
+  ```javascript
+  const PORT = 3000;
+  ```
+
+- **Porta para Envio de Mensagens OSC**: As mensagens OSC são enviadas para a porta `9000`:
+  ```javascript
+  const OSC_SEND_PORT = 9000;
+  ```
+
+- **Endereço e Porta Local do OSC**: Configuração do UDP para OSC:
+  ```javascript
+  const oscUDP = new osc.UDPPort({
+    localAddress: '0.0.0.0',  // Escuta em todas as interfaces
+    localPort: 0,             // Usa uma porta aleatória para envio
+  });
+  ```
+
+### Banco de Dados JSON
+
+- **Jogadores**: Os jogadores são armazenados em `jogadores.json`.
+- **Perguntas**: As perguntas são armazenadas em `perguntas.json`.
+
+### Webcam
+
+Para capturar fotos durante o cadastro, é necessário ter uma webcam configurada.
+
+## Configuração
+
+1. **Inicie o servidor**:
 
    ```sh
    node server.js
    ```
 
-## Configuração
+2. **Verifique se o servidor está rodando**:
 
-- **Banco de dados JSON**: Os jogadores e perguntas são armazenados em arquivos JSON (`jogadores.json` e `perguntas.json`).
-- **Webcam**: Para capturar fotos durante o cadastro, é necessário ter uma webcam configurada.
+   Acesse [http://localhost:3000](http://localhost:3000) no seu navegador para verificar se o servidor está funcionando corretamente.
 
 ## Funcionalidades
 
@@ -66,6 +100,66 @@ Este é um jogo de perguntas e respostas onde os jogadores competem entre si par
 
 - **Gerenciar Conexões**: Gerenciamento das conexões dos jogadores e controle das etapas do jogo.
 - **Enviar Mensagens OSC**: Envio de mensagens OSC para sinalizar início, rodadas, respostas e fim do jogo.
+
+## Estrutura das Perguntas
+
+As perguntas são armazenadas no arquivo `perguntas.json` e seguem a estrutura abaixo:
+
+### Estrutura de uma Pergunta
+
+Cada pergunta é um objeto JSON com os seguintes campos:
+
+- **id**: Um identificador único para a pergunta.
+- **texto**: O texto da pergunta.
+- **opcoes**: Um array de opções de resposta, onde cada opção é um objeto com `letra` e `texto`.
+- **correta**: A letra da opção correta.
+
+### Exemplo de Pergunta
+
+```json
+{
+  "id": 1,
+  "texto": "Qual é a capital da França?",
+  "opcoes": [
+    { "letra": "A", "texto": "Berlim" },
+    { "letra": "B", "texto": "Madrid" },
+    { "letra": "C", "texto": "Paris" },
+    { "letra": "D", "texto": "Roma" }
+  ],
+  "correta": "C"
+}
+```
+
+### Banco de Dados JSON de Perguntas
+
+O arquivo `perguntas.json` contém um array de perguntas:
+
+```json
+[
+  {
+    "id": 1,
+    "texto": "Qual é a capital da França?",
+    "opcoes": [
+      { "letra": "A", "texto": "Berlim" },
+      { "letra": "B", "texto": "Madrid" },
+      { "letra": "C", "texto": "Paris" },
+      { "letra": "D", "texto": "Roma" }
+    ],
+    "correta": "C"
+  },
+  {
+    "id": 2,
+    "texto": "Qual é o maior oceano do mundo?",
+    "opcoes": [
+      { "letra": "A", "texto": "Atlântico" },
+      { "letra": "B", "texto": "Índico" },
+      { "letra": "C", "texto": "Pacífico" },
+      { "letra": "D", "texto": "Ártico" }
+    ],
+    "correta": "C"
+  }
+]
+```
 
 ## Arquitetura
 
@@ -190,48 +284,49 @@ Envia a mensagem de fim da partida.
 
 Envia a mensagem indicando o vencedor da partida.
 
-## Melhorias Futuras
+## Mensagens de Debug
 
-1. **Diversidade de Perguntas**
-   - Aumentar o banco de perguntas com diferentes temas e níveis de dificuldade.
-   - Permitir que os jogadores sugiram perguntas.
+Mensagens de debug são adicionadas ao longo do código para facilitar o rastreamento e resolução de problemas. Aqui estão algumas das principais mensagens de debug:
 
-2. **Mecânicas de Jogo**
-   - Introduzir diferentes modos de jogo, como modo relâmpago e modo desafio.
-   - Adicionar poderes e bônus para os jogadores usarem durante o jogo.
+- **Início do Servidor**:
+  ```sh
+  console.log(`Servidor rodando na porta ${PORT}`);
+  ```
 
-3. **Interatividade**
-   - Melhorar o feedback visual com animações e efeitos sonoros.
-   - Fornecer feedback imediato para cada resposta.
+- **Jogador Conectado
 
-4. **Competição e Cooperação**
-   - Implementar um sistema de leaderboard para mostrar os melhores jogadores.
-   - Permitir desafios entre amigos e jogos em equipe.
+**:
+  ```sh
+  console.log(`Novo jogador conectado: ${jogador.nome}`);
+  ```
 
-5. **Recompensas e Progressão**
-   - Implementar um sistema de níveis e conquistas.
-   - Introduzir uma moeda do jogo para recompensas e compras de itens.
+- **Recebimento de Resposta**:
+  ```sh
+  console.log(`Resposta recebida: Jogador ${jogadorPosition} - Resposta: ${resposta}`);
+  ```
 
-6. **Personalização**
-   - Permitir que os jogadores personalizem seus avatares e perfis.
-   - Oferecer diferentes temas visuais e sonoros.
+- **Processamento de Resposta**:
+  ```sh
+  console.log(`Processando resposta do jogador ${jogador.nome}: ${jogador.resposta}`);
+  ```
 
-7. **Acessibilidade**
-   - Adicionar opções de acessibilidade, como texto em alta definição e suporte para leitores de tela.
-   - Suporte para múltiplos idiomas e adaptação cultural.
+- **Pontuação Atualizada**:
+  ```sh
+  console.log(`Jogador ${jogador.nome} acertou! Pontuação Temporária: ${jogador.pontuacaoTemp}`);
+  console.log(`Jogador ${jogador.nome} errou e perdeu 5 pontos. Pontuação Temporária: ${jogador.pontuacaoTemp}`);
+  ```
 
-8. **Engajamento Contínuo**
-   - Organizar eventos e torneios regulares com prêmios.
-   - Enviar notificações sobre novos modos de jogo e eventos futuros.
+- **Anúncio do Vencedor**:
+  ```sh
+  console.log('Jogo finalizado. Pontuações Temporárias:', selectedPlayers.map(j => `${j.nome}: ${j.pontuacaoTemp}`).join(', '));
+  console.log(`Vencedor ${vencedorDb.nome} registrado com pontuação: ${pontuacaoDurantePartida}`);
+  ```
 
-9. **Feedback e Comunidade**
-   - Adicionar um sistema de feedback para coletar opiniões dos jogadores.
-   - Criar uma comunidade online ou fóruns para discussão e sugestões.
-
-10. **Melhoria Contínua**
-    - Utilizar analytics para monitorar o comportamento dos jogadores e identificar áreas de melhoria.
-    - Realizar testes A/B para novas funcionalidades e iterar com base no feedback dos jogadores.
+- **Fim do Jogo**:
+  ```sh
+  console.log('Fim do jogo. Preparando para nova partida.');
+  ```
 
 ---
 
-Esta documentação cobre os principais aspectos do seu jogo de perguntas e respostas, incluindo funcionalidades, arquitetura, fluxo do jogo, endpoints da API e sugestões de melhorias futuras. Se houver mais detalhes específicos que você gostaria de incluir, por favor, me avise!
+Esta documentação cobre os principais aspectos do seu jogo de perguntas e respostas, incluindo funcionalidades, arquitetura, fluxo do jogo, estrutura das perguntas, endpoints da API, mensagens OSC e mensagens de debug. Se houver mais detalhes específicos que você gostaria de incluir, por favor, me avise!
