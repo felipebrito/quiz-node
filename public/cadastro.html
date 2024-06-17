@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Jogadores</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.css">
+  <style>
+    #playerFotoPreview {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>Cadastro de Jogadores</h1>
+    <form id="playerForm" enctype="multipart/form-data">
+      <div class="form-group">
+        <label for="nome">Nome</label>
+        <input type="text" class="form-control" id="nome" name="nome" required>
+      </div>
+      <div class="form-group">
+        <label for="cidade">Cidade</label>
+        <input type="text" class="form-control" id="cidade" name="cidade" required>
+      </div>
+      <div class="form-group">
+        <label for="foto">Foto</label>
+        <input type="file" class="form-control-file" id="foto" name="foto" accept="image/*" required>
+        <img id="playerFotoPreview" src="#" alt="Foto do Jogador" class="img-thumbnail mt-2" style="display: none;">
+      </div>
+      <button type="submit" class="btn btn-primary">Cadastrar</button>
+    </form>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script>
+    $(document).ready(function() {
+      $('#foto').change(function(e) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          $('#playerFotoPreview').attr('src', e.target.result).show();
+        }
+        reader.readAsDataURL(this.files[0]);
+      });
+
+      $('#playerForm').submit(function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        $.ajax({
+          url: '/jogadores',
+          type: 'POST',
+          data: formData,
+          processData: false,
+          contentType: false,
+          success: function(data) {
+            alert('Jogador cadastrado com sucesso!');
+            window.location.href = 'index.html';
+          },
+          error: function(err) {
+            alert('Erro ao cadastrar jogador.');
+          }
+        });
+      });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+[
+  {
+    "pergunta": "Qual é a capital da França?",
+    "opcoes": ["A) Berlim", "B) Madri", "C) Paris"],
+    "correta": "C"
+  },
+  {
+    "pergunta": "Qual é o maior planeta do sistema solar?",
+    "opcoes": ["A) Marte", "B) Júpiter", "C) Saturno"],
+    "correta": "B"
+  },
+  {
+    "pergunta": "Quem pintou a Mona Lisa?",
+    "opcoes": ["A) Vincent van Gogh", "B) Pablo Picasso", "C) Leonardo da Vinci"],
+    "correta": "C"
+  },
+  {
+    "pergunta": "Qual é a fórmula química da água?",
+    "opcoes": ["A) H2O", "B) CO2", "C) O2"],
+    "correta": "A"
+  },
+  {
+    "pergunta": "Quantos continentes existem na Terra?",
+    "opcoes": ["A) 5", "B) 6", "C) 7"],
+    "correta": "C"
+  }
+]

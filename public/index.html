@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jogadores</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.css">
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+  <style>
+    #selectedPlayers {
+      min-height: 200px;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    #playersList {
+      min-height: 200px;
+      border: 1px solid #ccc;
+      padding: 10px;
+    }
+    #searchInput {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <a class="navbar-brand" href="#">Quiz Game</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item active">
+          <a class="nav-link" href="index.html">Jogadores <span class="sr-only">(current)</span></a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="cadastro.html">Cadastro</a>
+        </li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Lista de Jogadores -->
+  <div class="container mt-4">
+    <h1>Lista de Jogadores</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <h3>Jogadores Disponíveis</h3>
+        <input type="text" id="searchInput" class="form-control" placeholder="Buscar jogador...">
+        <div id="playersList" class="list-group"></div>
+        <nav aria-label="Page navigation">
+          <ul class="pagination justify-content-center">
+            <li class="page-item"><a class="page-link" href="#" id="prevPage">Anterior</a></li>
+            <li class="page-item"><a class="page-link" href="#" id="nextPage">Próximo</a></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="col-md-6">
+        <h3>Jogadores Selecionados</h3>
+        <div id="selectedPlayers" class="list-group"></div>
+        <button id="startGame" class="btn btn-primary mt-3">Iniciar Partida</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    $(function () {
+      const playersList = $('#playersList');
+      const selectedPlayers = $('#selectedPlayers');
+      const searchInput = $('#searchInput');
+      const playersPerPage = 10;
+      let currentPage = 1;
+      let allPlayers = [];
+
+      function fetchJogadores() {
+        $.getJSON('/jogadores', function (jogadores) {
+          allPlayers = jogadores;
+          renderPlayers();
+        });
+      }
+
+      function renderPlayers() {
+        const searchTerm = searchInput.val().toLowerCase();
+        const filteredPlayers = allPlayers.filter(player => player.nome.toLowerCase().includes(searchTerm));
+        const totalPages = Math.ceil(filteredPlayers.length / playersPerPage);
+        const start = (currentPage - 1) * playersPerPage;
+        const end = start + playersPerPage;
+        const playersToShow = filteredPlayers.slice(start, end);
+
+        playersList.empty();
+        playersToShow.forEach(jogador => {
+          const playerItem = $(`
+            <div class="list-group-item d-flex justify-content-between align-items-center" data-id="${jogador.id}">
+              <div>
+                <img src="${jogador.foto}" width="30" height="30" class="img-thumbnail mr-2">
+                ${jogador.nome} - Pontuação: ${jogador.pontuacao}
+              </div>
+              <div>
+                <button class="btn btn-sm btn-warning edit-player mr-2"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-sm btn-danger delete-player"><i class="fas fa-trash-alt"></i></button>
+              </div>
+            </div>
+          `);
+          playersList.append(playerItem);
+        });
+
+        updatePagination(totalPages);
+      }
+
+      function updatePagination(totalPages) {
+        $('#prevPage').parent().toggleClass('disabled', currentPage === 1);
+        $('#nextPage').parent().toggleClass('disabled', currentPage === totalPages);
+      }
+
+      $('#prevPage').click(function (e) {
+        e.preventDefault();
+        if (currentPage > 1) {
+          currentPage--;
+          renderPlayers();
+        }
+      });
+
+      $('#nextPage').click(function (e) {
+        e.preventDefault();
+        const searchTerm = searchInput.val().toLowerCase();
+        const filteredPlayers = allPlayers.filter(player => player.nome.toLowerCase().includes(searchTerm));
+        const totalPages = Math.ceil(filteredPlayers.length / playersPerPage);
+        if (currentPage < totalPages) {
+          currentPage++;
+          renderPlayers();
+        }
+      });
+
+      playersList.on('click', '.list-group-item', function () {
+        const item = $(this).clone();
+        $(this).remove();
+        selectedPlayers.append(item);
+        updateSelectedPlayers();
+      });
+
+      selectedPlayers.on('click', '.list-group-item', function () {
+        const item = $(this).clone();
+        $(this).remove();
+        playersList.append(item);
+        updateSelectedPlayers();
+        renderPlayers(); // Re-render the available players list to include the deselected player
+      });
+
+      $('#startGame').click(function () {
+        const jogadorIds = [];
+        selectedPlayers.children().each(function () {
+          jogadorIds.push($(this).data('id'));
+        });
+
+        if (jogadorIds.length === 3) {
+          $.post('/start-game', { jogadorIds }, function (response) {
+            window.location.href = `servidor.html?jogadores=${jogadorIds.join(',')}`;
+          });
+        } else {
+          alert('Selecione exatamente 3 jogadores para iniciar a partida.');
+        }
+      });
+
+      selectedPlayers.sortable({
+        update: updateSelectedPlayers,
+      });
+      selectedPlayers.disableSelection();
+
+      searchInput.on('input', function () {
+        currentPage = 1; // Reset to the first page on new search
+        renderPlayers();
+      });
+
+      playersList.on('click', '.edit-player', function (event) {
+        event.stopPropagation();
+        // Implementar lógica de edição do jogador
+      });
+
+      playersList.on('click', '.delete-player', function (event) {
+        event.stopPropagation();
+        const item = $(this).closest('.list-group-item');
+        const jogadorId = item.data('id');
+        $.ajax({
+          url: `/jogadores/${jogadorId}`,
+          type: 'DELETE',
+          success: function (result) {
+            item.remove();
+            allPlayers = allPlayers.filter(player => player.id !== jogadorId);
+            renderPlayers();
+          }
+        });
+      });
+
+      function updateSelectedPlayers() {
+        selectedPlayers.children().each(function (index) {
+          const playerIndex = index + 1;
+          $(this).find('.position-number').remove();
+          $(this).prepend(`<span class="badge badge-primary position-number mr-2">#${playerIndex}</span>`);
+        });
+      }
+
+      fetchJogadores();
+    });
+  </script>
+</body>
+</html>

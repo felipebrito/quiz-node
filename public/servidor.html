@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Servidor - Quiz Game</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.css">
+  <style>
+    #ranking {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Servidor - Quiz Game</h1>
+    <div id="status">
+      <h2>Rodada Atual: <span id="currentRound">0</span></h2>
+      <h3>Contador: <span id="timer">10</span></h3>
+      <h3>Pergunta: <span id="currentQuestion">Aguardando...</span></h3>
+    </div>
+    <div id="responses" class="list-group">
+      <!-- Respostas dos jogadores serão inseridas aqui -->
+    </div>
+    <div id="ranking" class="mt-4">
+      <h2>Ranking Final</h2>
+      <ul id="rankingList" class="list-group">
+        <!-- Ranking final será inserido aqui -->
+      </ul>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="/socket.io/socket.io.js"></script>
+  <script>
+    const socket = io();
+    let currentRound = 0;
+
+    socket.on('timerUpdate', (timeLeft) => {
+      $('#timer').text(timeLeft.toFixed(1));
+    });
+
+    socket.on('roundUpdate', (round) => {
+      currentRound = round;
+      $('#currentRound').text(round);
+    });
+
+    socket.on('novaPergunta', (pergunta) => {
+      $('#currentQuestion').text(pergunta);
+    });
+
+    socket.on('statusUpdate', (players) => {
+      const responses = $('#responses');
+      responses.empty();
+      players.forEach(player => {
+        const responseText = player.resposta ? player.resposta : 'Sem resposta';
+        const listItem = `<li class="list-group-item">${player.nome} (Posição: ${player.position}): ${responseText} - Pontuação: ${player.pontuacao.toFixed(2)}</li>`;
+        responses.append(listItem);
+      });
+    });
+
+    socket.on('rankingFinal', (players) => {
+      const rankingList = $('#rankingList');
+      rankingList.empty();
+      players.forEach(player => {
+        const listItem = `<li class="list-group-item">${player.nome} (Posição: ${player.position}): ${player.pontuacao.toFixed(2)}</li>`;
+        rankingList.append(listItem);
+      });
+    });
+
+    socket.on('mostrarVencedor', (vencedor) => {
+      alert(`Vencedor: ${vencedor.nome} com ${vencedor.pontuacao.toFixed(2)} pontos!`);
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 10000); // 10 segundos antes de redirecionar para a tela de seleção de jogadores
+    });
+
+    socket.on('resetGame', () => {
+      setTimeout(() => {
+        window.location.href = 'index.html';
+      }, 10000); // 10 segundos antes de redirecionar para a tela de seleção de jogadores
+    });
+  </script>
+</body>
+</html>
