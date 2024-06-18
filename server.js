@@ -88,6 +88,54 @@ app.delete('/jogadores/:id', (req, res) => {
   res.status(200).send('Jogador deletado com sucesso');
 });
 
+// Rota para listar todas as perguntas
+app.get('/perguntas', (req, res) => {
+  res.json(perguntas);
+});
+
+// Rota para deletar uma pergunta
+app.delete('/perguntas/:pergunta', (req, res) => {
+  const { pergunta } = req.params;
+  perguntas = perguntas.filter(p => p.pergunta !== pergunta);
+  fs.writeFileSync('perguntas.json', JSON.stringify(perguntas));
+  res.status(200).send('Pergunta deletada com sucesso');
+});
+
+// Rota para atualizar uma pergunta
+app.put('/perguntas/:pergunta', (req, res) => {
+  const { pergunta } = req.params;
+  const { novaPergunta, opcoes, correta } = req.body;
+
+  const perguntaIndex = perguntas.findIndex(p => p.pergunta === pergunta);
+  if (perguntaIndex !== -1) {
+    perguntas[perguntaIndex] = { pergunta: novaPergunta, opcoes, correta };
+    fs.writeFileSync('perguntas.json', JSON.stringify(perguntas));
+    res.status(200).json(perguntas[perguntaIndex]);
+  } else {
+    res.status(404).send('Pergunta não encontrada');
+  }
+});
+
+
+// Adicionar rota para adicionar uma nova pergunta
+app.post('/perguntas', (req, res) => {
+  const { pergunta, opcoes, correta } = req.body;
+
+  if (!pergunta || !opcoes || !correta) {
+    return res.status(400).send('Dados incompletos');
+  }
+
+  const novaPergunta = {
+    pergunta,
+    opcoes,
+    correta
+  };
+
+  perguntas.push(novaPergunta);
+  fs.writeFileSync('perguntas.json', JSON.stringify(perguntas));
+  res.status(201).json(novaPergunta);
+});
+
 // Iniciar o servidor
 const server = app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
@@ -202,7 +250,6 @@ function showRanking(vencedor) {
     console.log('Fim do jogo. Preparando para nova partida.');
   }, 10000);
 }
-
 
 app.post('/start-game', (req, res) => {
   const { jogadorIds } = req.body;
