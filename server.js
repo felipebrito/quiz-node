@@ -136,6 +136,65 @@ app.post('/perguntas', (req, res) => {
   res.status(201).json(novaPergunta);
 });
 
+
+
+let gameHistory = require('./gameHistory.json');
+
+// Rota para pontuações mais altas
+app.get('/high-scores', (req, res) => {
+  const highScores = jogadores.sort((a, b) => b.pontuacao - a.pontuacao).slice(0, 10);
+  res.json(highScores);
+});
+
+// Rota para jogadores mais rápidos
+app.get('/fastest-players', (req, res) => {
+  const fastestPlayers = jogadores.filter(jogador => jogador.respostaTime !== null)
+                                  .sort((a, b) => a.respostaTime - b.respostaTime)
+                                  .slice(0, 10);
+  res.json(fastestPlayers);
+});
+
+// Rota para histórico de jogos
+app.get('/game-history', (req, res) => {
+  const historyWithNames = gameHistory.map(entry => {
+    const vencedor = jogadores.find(jogador => jogador.id === entry.vencedorId);
+    return {
+      vencedor: vencedor ? vencedor.nome : 'Desconhecido',
+      pontuacao: entry.pontuacao
+    };
+  });
+  res.json(historyWithNames);
+});
+
+// Rota para pontuações mais altas
+app.get('/api/high-scores', (req, res) => {
+  const highScores = jogadores.sort((a, b) => b.pontuacao - a.pontuacao).slice(0, 10);
+  res.json(highScores);
+});
+
+// Rota para jogadores mais rápidos
+app.get('/api/fastest-players', (req, res) => {
+  const fastestPlayers = jogadores.filter(jogador => jogador.respostaTime !== null)
+                                  .sort((a, b) => a.respostaTime - b.respostaTime)
+                                  .slice(0, 10);
+  res.json(fastestPlayers);
+});
+
+// Rota para histórico de jogos
+app.get('/api/game-history', (req, res) => {
+  const historyWithNames = gameHistory.map(entry => {
+    const vencedor = jogadores.find(jogador => jogador.id === entry.vencedorId);
+    return {
+      vencedor: vencedor ? vencedor.nome : 'Desconhecido',
+      pontuacao: entry.pontuacao
+    };
+  });
+  res.json(historyWithNames);
+});
+
+
+
+
 // Iniciar o servidor
 const server = app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);

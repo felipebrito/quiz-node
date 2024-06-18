@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Estatísticas</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootswatch/4.5.2/darkly/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-4">
+    <h1>Dashboard de Estatísticas</h1>
+    <div class="row">
+      <div class="col-md-4">
+        <h2>Pontuações mais altas</h2>
+        <ul class="list-group" id="highScores">
+          <!-- Jogadores com pontuações mais altas serão exibidos aqui -->
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h2>Jogadores mais rápidos</h2>
+        <ul class="list-group" id="fastestPlayers">
+          <!-- Jogadores com tempos de resposta mais rápidos serão exibidos aqui -->
+        </ul>
+      </div>
+      <div class="col-md-4">
+        <h2>Histórico de jogos</h2>
+        <ul class="list-group" id="gameHistory">
+          <!-- Histórico de jogos será exibido aqui -->
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+  <script>
+    async function fetchHighScores() {
+      const response = await fetch('/high-scores');
+      const highScores = await response.json();
+      const highScoresList = document.getElementById('highScores');
+      highScoresList.innerHTML = '';
+      highScores.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.textContent = `${player.nome}: ${player.pontuacao}`;
+        highScoresList.appendChild(listItem);
+      });
+    }
+
+    async function fetchFastestPlayers() {
+      const response = await fetch('/fastest-players');
+      const fastestPlayers = await response.json();
+      const fastestPlayersList = document.getElementById('fastestPlayers');
+      fastestPlayersList.innerHTML = '';
+      fastestPlayers.forEach(player => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.textContent = `${player.nome}: ${player.respostaTime} segundos`;
+        fastestPlayersList.appendChild(listItem);
+      });
+    }
+
+    async function fetchGameHistory() {
+      const response = await fetch('/game-history');
+      const gameHistory = await response.json();
+      const gameHistoryList = document.getElementById('gameHistory');
+      gameHistoryList.innerHTML = '';
+      gameHistory.forEach(game => {
+        const listItem = document.createElement('li');
+        listItem.className = 'list-group-item';
+        listItem.textContent = `Vencedor: ${game.vencedor} - Pontuação: ${game.pontuacao}`;
+        gameHistoryList.appendChild(listItem);
+      });
+    }
+
+    async function fetchDashboardData() {
+      await fetchHighScores();
+      await fetchFastestPlayers();
+      await fetchGameHistory();
+    }
+
+    fetchDashboardData();
+  </script>
+</body>
+</html>
